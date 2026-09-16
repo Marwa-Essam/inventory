@@ -16,3 +16,6 @@ config-local.properties
 # OS files
 .DS_Store
 Thumbs.db
+
+allure-results/
+allure-report/

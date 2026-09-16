@@ -1,0 +1,64 @@
+name: Electro Pi Automation Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Automation Code
+        uses: actions/checkout@v4
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Postman API Tests
+        run: |
+          newman run api/Inventory.postman_collection.json \
+            --env-var baseUrl=$BASE_URL \
+            --reporters cli,junit \
+            --reporter-junit-export results/api-results.xml
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+
+  ui-tests:
+    runs-on: ubuntu-latest
+    needs: api-tests
+    steps:
+      - name: Checkout Automation Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Google Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Run Selenium UI Tests
+        run: mvn clean test
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          STORE_ADMIN_USERNAME: ${{ secrets.STORE_ADMIN_USERNAME }}
+          STORE_ADMIN_PASSWORD: ${{ secrets.STORE_ADMIN_PASSWORD }}
+
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: automation-test-reports
+          path: target/surefire-reports
