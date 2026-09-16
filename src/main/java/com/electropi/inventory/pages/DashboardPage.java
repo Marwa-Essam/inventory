@@ -12,3 +12,4 @@ public class DashboardPage extends BasePage {
         return new InventoryPage();
     }
 }
+

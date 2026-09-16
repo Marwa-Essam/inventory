@@ -7,7 +7,6 @@ import com.electropi.inventory.pages.LoginPage;
 import com.electropi.inventory.utils.ConfigReader;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
 public class InventoryTest extends BaseTest {
 
     @Test(enabled = false)
